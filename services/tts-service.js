@@ -16,8 +16,11 @@ class TextToSpeechService extends EventEmitter {
 
     if (!partialResponse) { return; }
 
+    // CHNAGES ENV VARIABLE KI MKC AANA RAHA H VOICE ID UNDEFINED
     try {
       const outputFormat = 'ulaw_8000';
+      const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${this.config.voiceId}/stream?output_format=${outputFormat}&optimize_streaming_latency=3`;
+      console.log('API URL:', apiUrl); 
       const response = await fetch(
         `https://api.elevenlabs.io/v1/text-to-speech/${this.config.voiceId}/stream?output_format=${outputFormat}&optimize_streaming_latency=3`,
         {
@@ -34,6 +37,7 @@ class TextToSpeechService extends EventEmitter {
           }),
         }
       );
+
       const audioArrayBuffer = await response.arrayBuffer();
       this.emit('speech', partialResponseIndex, Buffer.from(audioArrayBuffer).toString('base64'), partialResponse, interactionCount);
     } catch (err) {
