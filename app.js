@@ -46,7 +46,7 @@ app.ws('/connection', (ws) => {
       streamSid = msg.start.streamSid;
       streamService.setStreamSid(streamSid);
       console.log(`Twilio -> Starting Media Stream for ${streamSid}`.underline.red);
-      ttsService.generate({partialResponseIndex: null, partialResponse: 'Hello! I understand you\'re looking for a pair of AirPods, is that correct?'}, 1);
+      ttsService.generate({partialResponseIndex: null, partialResponse: 'Hello! I understand you\'re looking for scheduling a meeting. Is that correct?'}, 1);
     } else if (msg.event === 'media') {
       transcriptionService.send(msg.media.payload);
     } else if (msg.event === 'mark') {
