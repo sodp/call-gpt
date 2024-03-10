@@ -2,6 +2,7 @@ require('colors');
 const EventEmitter = require('events');
 const OpenAI = require('openai');
 const tools = require('../functions/function-manifest');
+const getCurrentTime = require('../util.js');
 
 // Import all functions included in function manifest
 // Note: the function name and file name must be the same
@@ -17,7 +18,7 @@ class GptService extends EventEmitter {
     this.openai = new OpenAI();
     this.userContext = [
       // { 'role': 'system', 'content': 'You are an outbound sales representative selling Apple Airpods. You have a youthful and cheery personality. Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. Don\'t ask more than 1 question at a time. Don\'t make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous. Speak out all prices to include the currency. Please help them decide between the airpods, airpods pro and airpods max by asking questions like \'Do you prefer headphones that go in your ear or over the ear?\'. If they are trying to choose between the airpods and airpods pro try asking them if they need noise canceling. Once you know which model they would like ask them how many they would like to purchase and try to get them to place an order. You must add a \'•\' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.' },
-      { 'role': 'system', 'content': 'You are an outbound customer care handler. You have a youthful and cheery personality. Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. Don\'t ask more than 1 question at a time. Don\'t make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous. Speak out all the details to include context. If the user is trying to schedule a google meet or calendar event or anytype of thing related to meeting, ask them [attendees_email_address, date, time, topic] of the meeting. If they a You must add a \'•\' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.' },
+      { 'role': 'system', 'content': 'You are an outbound customer care handler. You have a youthful and cheery personality. Keep your responses as brief as possible but make every attempt to keep the caller on the phone without being rude. Don\'t ask more than 1 question at a time. Don\'t make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous. Speak out all the details to include context. If the user is trying to schedule a google meet or calendar event or anytype of thing related to meeting, ask them [attendees_email_address, date, time, topic] of the meeting. If the user is looking to get any order status, you have to ask them their phone number. The phone number can be in text or cluttered, use your intelligence to form an integer phone number. If they a You must add a \'•\' symbol every 5 to 10 words at natural pauses where your response can be split for text to speech.' },
       { 'role': 'assistant', 'content': 'Hello! I understand you\'re looking to schedule a meeting. Is that correct?' },
     ],
     this.partialResponseIndex = 0;
@@ -109,7 +110,7 @@ class GptService extends EventEmitter {
       }
     }
     this.userContext.push({'role': 'assistant', 'content': completeResponse});
-    console.log(`GPT -> user context length: ${this.userContext.length}`.green);
+    console.log(`${getCurrentTime()} GPT -> user context length: ${this.userContext.length}`.green);
   }
 }
 

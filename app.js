@@ -2,7 +2,7 @@ require('dotenv').config();
 require('colors');
 const express = require('express');
 const ExpressWs = require('express-ws');
-
+const getCurrentTime = require('./util');
 
 const { GptService } = require('./services/gpt-service');
 const { StreamService } = require('./services/stream-service');
@@ -45,23 +45,23 @@ app.ws('/connection', (ws) => {
     if (msg.event === 'start') {
       streamSid = msg.start.streamSid;
       streamService.setStreamSid(streamSid);
-      console.log(`Twilio -> Starting Media Stream for ${streamSid}`.underline.red);
-      ttsService.generate({partialResponseIndex: null, partialResponse: 'Hello! I understand you\'re looking for scheduling a meeting. Is that correct?'}, 1);
+      console.log(`${getCurrentTime()} Twilio -> Starting Media Stream for ${streamSid}`.underline.red);
+      ttsService.generate({partialResponseIndex: null, partialResponse: 'Hello! I understand you\'re either looking for scheduling a meeting or any order status. Is that correct?'}, 1);
     } else if (msg.event === 'media') {
       transcriptionService.send(msg.media.payload);
     } else if (msg.event === 'mark') {
       const label = msg.mark.name;
-      console.log(`Twilio -> Audio completed mark (${msg.sequenceNumber}): ${label}`.red);
+      console.log(`${getCurrentTime()} Twilio -> Audio completed mark (${msg.sequenceNumber}): ${label}`.red);
       marks = marks.filter(m => m !== msg.mark.name);
     } else if (msg.event === 'stop') {
-      console.log(`Twilio -> Media stream ${streamSid} ended.`.underline.red);
+      console.log(`${getCurrentTime()} Twilio -> Media stream ${streamSid} ended.`.underline.red);
     }
   });
 
   transcriptionService.on('utterance', async (text) => {
     // This is a bit of a hack to filter out empty utterances
     if(marks.length > 0 && text?.length > 5) {
-      console.log('Twilio -> Interruption, Clearing stream'.red);
+      console.log(`${getCurrentTime()} Twilio -> Interruption, Clearing stream`.red);
       ws.send(
         JSON.stringify({
           streamSid,
@@ -73,18 +73,22 @@ app.ws('/connection', (ws) => {
 
   transcriptionService.on('transcription', async (text) => {
     if (!text) { return; }
-    console.log(`Interaction ${interactionCount} – STT -> GPT: ${text}`.yellow);
+    console.log(`${getCurrentTime()} Interaction ${interactionCount} – STT -> GPT: ${text}`.yellow);
+    const startTime = Date.now();
     gptService.completion(text, interactionCount);
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    console.log(`${getCurrentTime()} GPT processing time: ${duration}ms`.cyan);
     interactionCount += 1;
   });
-  
+
   gptService.on('gptreply', async (gptReply, icount) => {
-    console.log(`Interaction ${icount}: GPT -> TTS: ${gptReply.partialResponse}`.green );
+    console.log(`${getCurrentTime()} Interaction ${icount}: GPT -> TTS: ${gptReply.partialResponse}`.green );
     ttsService.generate(gptReply, icount);
   });
 
   ttsService.on('speech', (responseIndex, audio, label, icount) => {
-    console.log(`Interaction ${icount}: TTS -> TWILIO: ${label}`.blue);
+    console.log(`${getCurrentTime()} Interaction ${icount}: TTS -> TWILIO: ${label}`.blue);
 
     streamService.buffer(responseIndex, audio);
   });
