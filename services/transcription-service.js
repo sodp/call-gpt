@@ -2,7 +2,7 @@ require('colors');
 const { Deepgram } = require('@deepgram/sdk');
 const { Buffer } = require('node:buffer');
 const EventEmitter = require('events');
-
+const getCurrentTime = require('../util.js');
 
 class TranscriptionService extends EventEmitter {
   constructor() {
@@ -28,15 +28,15 @@ class TranscriptionService extends EventEmitter {
       if (alternatives) {
         text = alternatives[0]?.transcript;
       }
-      
+
       // if we receive an UtteranceEnd and speech_final has not already happened then we should consider this the end of of the human speech and emit the transcription
       if (transcription.type === 'UtteranceEnd') {
         if (!this.speechFinal) {
-          console.log(`UtteranceEnd received before speechFinal, emit the text collected so far: ${this.finalResult}`.yellow);
+          console.log(`${getCurrentTime()} UtteranceEnd received before speechFinal, emit the text collected so far: ${this.finalResult}`.yellow);
           this.emit('transcription', this.finalResult);
           return;
         } else {
-          console.log('STT -> Speech was already final when UtteranceEnd recevied'.yellow);
+          console.log(`${getCurrentTime()} STT -> Speech was already final when UtteranceEnd recevied`.yellow);
           return;
         }
       }
@@ -75,7 +75,7 @@ class TranscriptionService extends EventEmitter {
     });
     
     this.deepgramLive.addListener('close', () => {
-      console.log('STT -> Deepgram connection closed'.yellow);
+      console.log(`${getCurrentTime()} STT -> Deepgram connection closed`.yellow);
     });
   }
 
