@@ -4,14 +4,14 @@ const { Buffer } = require('node:buffer');
 const EventEmitter = require('events');
 const getCurrentTime = require('../util.js');
 
-class TranscriptionService extends EventEmitter {
+class WhisperTranscriptionService extends EventEmitter {
   constructor() {
     super();
     const deepgram = new Deepgram(process.env.DEEPGRAM_API_KEY);
     this.deepgramLive = deepgram.transcription.live({
       encoding: 'mulaw',
       sample_rate: '8000',
-      model: 'nova-2-conversationalai',
+      model: 'nova-2',
       punctuate: true,
       interim_results: true,
       endpointing: 200,
@@ -91,4 +91,4 @@ class TranscriptionService extends EventEmitter {
   }
 }
 
-module.exports = { TranscriptionService };
+module.exports = { WhisperTranscriptionService };
