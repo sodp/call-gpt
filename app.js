@@ -73,12 +73,10 @@ app.ws('/connection', (ws) => {
 
   transcriptionService.on('transcription', async (text) => {
     if (!text) { return; }
+    ttsService.generate({partialResponseIndex: null, partialResponse: 'Understood, on it...'}, 1);
+    interactionCount += 1
     console.log(`${getCurrentTime()} Interaction ${interactionCount} – STT -> GPT: ${text}`.yellow);
-    const startTime = Date.now();
     gptService.completion(text, interactionCount);
-    const endTime = Date.now();
-    const duration = endTime - startTime;
-    console.log(`${getCurrentTime()} GPT processing time: ${duration}ms`.cyan);
     interactionCount += 1;
   });
 
